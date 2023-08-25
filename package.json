@@ -9,17 +9,19 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@types/body-parser": "^1.19.2",
-    "apollo-server": "^3.12.0",
+    "@apollo/client": "^3.8.1",
+    "@apollo/server": "^4.9.2",
+    "@neo4j/graphql": "^3.24.2",
     "apollo-server-micro": "^3.12.0",
     "graphql": "^16.8.0",
-    "graphql-tools": "^9.0.0",
+    "lodash": "^4.17.21",
     "micro": "^10.0.1",
     "mongodb": "^5.8.1",
-    "mongoose": "^7.4.4",
+    "neo4j-driver": "^5.11.0",
     "next": "13.4.19",
-    "nodemon": "^3.0.1",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "react-force-graph-2d": "^1.25.0",
+    "ts-tiny-invariant": "2.0.5"
   }
 }
