@@ -1,39 +1,24 @@
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic"
 import _ from "lodash";
-import clientPromise from "../lib/mongo/mongodb";
+import Filter from "./components/Filter";
 
 const NoSSRForceGraph = dynamic(() => import('../lib/force-graph/NoSSRForceGraph'), {
   ssr: false
 });
 
-export async function getStaticProps() {
-  try {
-    const client = await clientPromise;
-    const db = await client.db()
-    const dosyalar = await db
-      .collection("dosya")
-      .find({})
-      .sort({ metacritic: -1 })
-      .limit(3)
-      .toArray();
-    return {
-      props: { dosyalar: JSON.parse(JSON.stringify(dosyalar)) },
-    };
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-export default function Home({ dosyalar }) {
+export default function Home({ }) {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] })
   const isFetchDosya = useRef(false);
 
   useEffect(() => {
     if (!isFetchDosya.current) {
-      console.log(dosyalar);
-      setGraphData(formatData(dosyalar))
-      isFetchDosya.current = true;
+      fetch('/api/dosya')
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data);
+          data.dosya ? setGraphData(formatData(data.dosya)) : null;
+        })
     }
   }, [isFetchDosya.current]);
 
@@ -94,11 +79,51 @@ export default function Home({ dosyalar }) {
     };
   }
 
+  const loadMoreData = (id, __typename) => {
+    fetch('/api/valueAndType', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id, __typename })
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.dosya) {
+          const newSubgraph = formatData(data.dosya);
+          setGraphData({
+            nodes: _.uniqBy([...graphData.nodes, ...newSubgraph.nodes], "id"),
+            links: [...graphData.links, ...newSubgraph.links]
+          })
+        }
+      })
+  }
+
+  const handleSubmit = (typename, id) => {
+    loadMoreData(id, typename);
+  }
+
+  const handleTemizleSubmit = () => {
+    setGraphData({ nodes: [], links: [] })
+  }
+
   return (
-    <NoSSRForceGraph
-      nodeAutoColorBy={"__typename"}
-      nodeLabel={"id"}
-      graphData={graphData}
-    />
+    <div>
+      <div>
+        <Filter handleSubmit={handleSubmit} handleTemizleSubmit={handleTemizleSubmit} />
+      </div>
+      <div style={{ margin: "3%", border: "2px solid gray", borderRadius: "50px", background: "white", height: "600px" }}>
+        <NoSSRForceGraph
+          nodeAutoColorBy={"__typename"}
+          nodeLabel={"id"}
+          graphData={graphData}
+          onNodeClick={(node, event) => {
+            if (node.__typename !== "dosya") {
+              loadMoreData(node.id, node.__typename)
+            }
+          }}
+        />
+      </div>
+    </div>
   )
 }
