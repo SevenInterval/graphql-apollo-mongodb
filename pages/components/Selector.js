@@ -12,23 +12,23 @@ const Selector = (props) => (
       options={[
         {
           value: 'kimlikNumarasi',
-          label: 'kimlikNumarasi',
+          label: 'Kimlik Numarası',
         },
         {
           value: 'pasaportNumarasi',
-          label: 'pasaportNumarasi',
+          label: 'Pasaport Numarası',
         },
         {
           value: 'vkn',
-          label: 'vkn',
+          label: 'Vkn',
         },
         {
           value: 'evTel',
-          label: 'evTel',
+          label: 'Ev Telefonu',
         },
         {
           value: 'ilKodu',
-          label: 'ilKodu',
+          label: 'İl Kodu',
         },
       ]}
     /></Space>

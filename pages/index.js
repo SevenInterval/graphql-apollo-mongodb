@@ -10,6 +10,7 @@ const NoSSRForceGraph = dynamic(() => import('../lib/force-graph/NoSSRForceGraph
 export default function Home({ }) {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] })
   const isFetchDosya = useRef(false);
+  const [highlightNodes, setHightLightNodes] = useState([])
 
   useEffect(() => {
     if (!isFetchDosya.current) {
@@ -72,7 +73,7 @@ export default function Home({ }) {
         target: dosya.evTel
       })
     });
-
+    console.log(nodes);
     return {
       nodes: _.uniqBy(nodes, "id"),
       links,
@@ -107,6 +108,96 @@ export default function Home({ }) {
     setGraphData({ nodes: [], links: [] })
   }
 
+  const nodeRender = (node, ctx, globalScale) => {
+    if (highlightNodes.indexOf(node) !== -1) {
+      // Add highlight ring around node
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, 3 * 0.4, 0, 2 * Math.PI, false);
+      ctx.fillStyle = "#7d669e";
+      ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, 3, 0, 2 * Math.PI, false);
+
+    switch (node.__typename) {
+      case "kimlikNumarasi":
+        ctx.fillStyle = "#016A70";
+        break;
+      case "pasaportNumarasi":
+        ctx.fillStyle = "#27005D";
+        break;
+      case "vkn":
+        ctx.fillStyle = "#FFA1F5";
+        break;
+      case "evTel":
+        ctx.fillStyle = "#94A684";
+        break;
+      case "ilKodu":
+        ctx.fillStyle = "#E1D263";
+        break;
+      default:
+        ctx.fillStyle = "#ea5400";
+        break;
+    }
+
+    ctx.fill();
+
+    if (node.__typename === "dosya") {
+      ctx.fillStyle = "#ea5400";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const fontSize = 12 / globalScale;
+      ctx.font = `${fontSize}px Sans-Serif`;
+      ctx.fillText(`Dosya ${node.id}`, node.x, node.y + 10);
+    }
+
+    if (node.__typename === "kimlikNumarasi") {
+      ctx.fillStyle = "#016A70";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const fontSize = 12 / globalScale;
+      ctx.font = `${fontSize}px Sans-Serif`;
+      ctx.fillText(`Kimlik No ${node.id}`, node.x, node.y + 10);
+    }
+
+    if (node.__typename === "pasaportNumarasi") {
+      ctx.fillStyle = "#27005D";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const fontSize = 12 / globalScale;
+      ctx.font = `${fontSize}px Sans-Serif`;
+      ctx.fillText(`Pasaport No ${node.id}`, node.x, node.y + 10);
+    }
+
+    if (node.__typename === "vkn") {
+      ctx.fillStyle = "#FFA1F5";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const fontSize = 12 / globalScale;
+      ctx.font = `${fontSize}px Sans-Serif`;
+      ctx.fillText(`Vkn ${node.id}`, node.x, node.y + 10);
+    }
+
+    if (node.__typename === "evTel") {
+      ctx.fillStyle = "#94A684";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const fontSize = 12 / globalScale;
+      ctx.font = `${fontSize}px Sans-Serif`;
+      ctx.fillText(`Ev Tel ${node.id}`, node.x, node.y + 10);
+    }
+
+    if (node.__typename === "ilKodu") {
+      ctx.fillStyle = "#E1D263";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const fontSize = 12 / globalScale;
+      ctx.font = `${fontSize}px Sans-Serif`;
+      ctx.fillText(`İl Kodu ${node.id}`, node.x, node.y + 10);
+    }
+  }
+
   return (
     <div>
       <div>
@@ -114,7 +205,6 @@ export default function Home({ }) {
       </div>
       <div style={{ margin: "3%", border: "2px solid gray", borderRadius: "50px", background: "white", height: "600px" }}>
         <NoSSRForceGraph
-          nodeAutoColorBy={"__typename"}
           nodeLabel={"id"}
           graphData={graphData}
           onNodeClick={(node, event) => {
@@ -122,6 +212,9 @@ export default function Home({ }) {
               loadMoreData(node.id, node.__typename)
             }
           }}
+          nodeCanvasObject={(node, canvasContext, scale) =>
+            nodeRender(node, canvasContext, scale)
+          }
         />
       </div>
     </div>
